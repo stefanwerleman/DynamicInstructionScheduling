@@ -11,10 +11,10 @@ SRC = ./src/
 TEST = ./tests/
 
 # List all your .cpp files here (source files, excluding header files)
-SIM_SRC = ./src/main_sim.cpp 
+SIM_SRC = ./src/main_sim.cpp ./libs/ArgumentWrapper/ArgumentWrapper.cpp
 
 # List corresponding compiled object files here (.o files)
-SIM_OBJ = ./src/main_sim.o 
+SIM_OBJ = ./src/main_sim.o ./libs/ArgumentWrapper/ArgumentWrapper.o
  
 #################################
 
@@ -31,6 +31,7 @@ sim: $(SIM_OBJ)
 	@if [ ! -d $(BUILD) ]; then mkdir $(BUILD); fi
 	@mv $(SRC)*.o $(BUILD)
 	@mv $(LIBS)*/*.o $(BUILD)
+	@chmod 777 sim
 	@echo "-----------DONE WITH SIM-----------"
 
 # generic rule for converting any .cc file to any .o file 
