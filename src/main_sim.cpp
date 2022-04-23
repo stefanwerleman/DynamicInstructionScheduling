@@ -15,25 +15,54 @@ void run_sim(ArgumentWrapper args)
         return;
     }
 
-    Instruction instr;
-    std::string in;
+    /**
+     * ! This entire loop is FakeROB
+     * 
+     * * Start of a Cycle
+     *      * FakeRetire():
+     *      ? 1. Remove instructions from the head of the FIFO until 
+     *      ?    you reached an instruction that is not in the WB state.
+     *      ! If nothing is in the FIFO, do nothing.
+     * 
+     *      * Execute():
+     *      ? 1. On the instruction that is done executing in this cycle:
+     *      ?    A. Remove instruction from execute_list[].
+     *      ?    B. Transition from EX state to WB state. Set the state of the instructionto WB
+     *      ?    C. Update the register file state and wakeup dependent instructions.
+     *      ! If nothing is in the execute_list[], do nothing     
+     * 
+     *      * Issue():
+     *      ? 1. Scan the ready instructions in the ready_list in 
+     *      ?    the order of tags and issue up to N+1 of them. 
+     *      ? 2. ISSUE:
+     *      ?    A. Remove the instruction from the issue_list[]
+     *      ?    B. Add the instruction to the execute_list[]
+     *      ?    C. Transition from the IS state to the EX state. Set the state of the instruction to EX
+     *      ?    D. Free up the scheduling queue entry 
+     *      ?       (decrement a count of the number of instructions in the scheduling queue)
+     *      ?    E. Set a timer in the isntruction's data structure that 
+     *      ?       will allow you to model the execution latency.
+     *      ! If nothing is in the ready_list[] and issue_list[], do nothing.
+     * 
+     *      * Dispatch():
+     *      ? 1. If the SchedulingQueue is not full, then:
+     *      ?    A. Remove the instruction from the dispatch_list[] and add it to the issue_list[]
+     *      ?    B. Transition from the ID state to the IS state. Set the state of the instruction to ID
+     *      ?    C. Rename source operands by looking up the state in the RegisterFile
+     *      ! If nothing is in the dispatch_list[], do nothing.
+     *      
+     *      * Fetch():
+     *      ? 2. Read new instructions from the trace until the fetch bandwidth is full or DispatchQueue is full.
+     *      ?    A. Push new instruction to FIFO.
+     *      ?    B. Set its state to IF.
+     *      ?    C. Add instruction to the dispatch_list[] and reserve a DispatchQueue entry.
+     * * End of a Cycle
+     * * AdvanceCycle():
+     * ? 1. If the FIFO is empty AND the trace is depleted, return False to the terminate the loop.
+     * ? 2. Otherwise, advance the simulator cycle.
+    */
 
-    while (file >> in)
-    {
-        instr.PC = in;
-
-        file >> in;
-        instr.op_type = stoi(in);
-
-        file >> in;
-        instr.dest_reg = stoi(in);
-
-        file >> in;
-        instr.src_reg1 = stoi(in);
-
-        file >> in;
-        instr.src_reg2 = stoi(in);
-    }
+    file.close();
 }
 
 int main(int argc, char **argv)
