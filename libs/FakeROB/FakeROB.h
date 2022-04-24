@@ -29,6 +29,9 @@ class FakeROB
         FakeROB (ArgumentWrapper args);
         ~FakeROB (void);
         
+        void fake_retire(void);
+        void execute(void);
+        void issue(void);
         void dispatch(void);
         void fetch(std::fstream *file);
         bool advance_cycle(std::fstream *file);

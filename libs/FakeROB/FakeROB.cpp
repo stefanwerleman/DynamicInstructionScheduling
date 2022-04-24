@@ -52,20 +52,66 @@ FakeROB::~FakeROB (void)
     }
 }
 
+void FakeROB::fake_retire(void)
+{
+    Instruction *instr = NULL;
+    while (!this->fifo->empty() && this->fifo->front()->state == "WB")
+    {
+        std::cout << *(this->fifo->front());
+        if (this->fifo->front() != NULL)
+        {
+            delete this->fifo->front();;
+        }
+
+        this->fifo->pop();
+    }
+}
+
+void FakeROB::execute(void)
+{
+    while (!this->execute_list->empty())
+    {
+        this->execute_list->front()->state = "WB";
+        this->execute_list->pop();
+    }
+}
+
+void FakeROB::issue(void)
+{
+    while (!this->issue_list->empty())
+    {
+        this->issue_list->front()->state = "EX";
+        this->execute_list->push(this->issue_list->front());
+        this->issue_list->pop();
+    }
+}
+
 void FakeROB::dispatch(void)
 {
-    
+    while (this->issue_list->size() < this->S && !this->dispatch_list->empty())
+    {
+        this->dispatch_list->front()->state = "IS";
+        this->issue_list->push(this->dispatch_list->front());
+        this->dispatch_list->pop();
+    }
 }
 
 void FakeROB::fetch(std::fstream *file)
 {
     unsigned int fetch_count = 0;
     std::string in;
+    Instruction *instr = NULL;
 
-    while ((*file) >> in)
-    {
-        Instruction *instr = new Instruction();
+    while (fetch_count < this->N && this->dispatch_list->size() < this->N2)
+    {   
+        (*file) >> in;
+        
+        if (file->eof())
+        {
+            return;
+        }
 
+        instr = new Instruction();
         instr->PC = in;
 
         (*file) >> in;
@@ -81,23 +127,10 @@ void FakeROB::fetch(std::fstream *file)
         instr->src_reg2 = stoi(in);
 
         instr->tag = this->num_instr;
-        if (this->dispatch_list->size() < this->N2)
-        {
-            instr->state = "ID";
-            this->dispatch_list->push(instr);
-        }
-        
+        this->fifo->push(instr);
+        this->dispatch_list->push(instr);
+
         this->num_instr++;
-        if (this->fifo->size() < 1024)
-        {
-            this->fifo->push(instr);
-        }
-        
-        fetch_count++;
-        if (fetch_count >= this->N)
-        {
-            return;
-        }
     }
 }
 
