@@ -18,6 +18,20 @@ void run_sim(ArgumentWrapper args)
 
     FakeROB *fr = new FakeROB(args);
 
+    int i = 0;
+    do
+    {
+        fr->fake_retire();
+        fr->execute();
+        fr->issue();
+        fr->dispatch();
+        fr->fetch(&file);
+        fr->num_cycles++;
+
+        i++;
+    }
+    while (fr->advance_cycle(&file));
+
     /**
      * ! This entire loop is FakeROB
      * 
@@ -51,7 +65,7 @@ void run_sim(ArgumentWrapper args)
      *      * Dispatch():
      *      ? 1. If the SchedulingQueue (issue_list[]) is not full, then:
      *      ?    A. Remove the instruction from the dispatch_list[] and add it to the issue_list[]
-     *      ?    B. Transition from the ID state to the IS state. Set the state of the instruction to ID
+     *      ?    B. Transition from the ID state to the IS state. Set the state of the instruction to IS
      *      ?    C. Rename source operands by looking up the state in the RegisterFile
      *      ! If nothing is in the dispatch_list[], do nothing.
      *      
