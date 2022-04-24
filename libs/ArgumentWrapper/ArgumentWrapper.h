@@ -14,6 +14,4 @@ class ArgumentWrapper
         ArgumentWrapper(int argc, char **argv);
 };
 
-std::ostream& operator << (std::ostream &output, ArgumentWrapper argument_wrapper);
-
 #endif
