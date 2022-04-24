@@ -4,6 +4,7 @@
 
 #include "../libs/ArgumentWrapper/ArgumentWrapper.h"
 #include "../libs/Instruction/Instruction.h"
+#include "../libs/FakeROB/FakeROB.h"
 
 void run_sim(ArgumentWrapper args)
 {
@@ -22,6 +23,7 @@ void run_sim(ArgumentWrapper args)
      *      * FakeRetire():
      *      ? 1. Remove instructions from the head of the FIFO until 
      *      ?    you reached an instruction that is not in the WB state.
+     *      ?    (i.e. remove all WB instructions from FIFO)
      *      ! If nothing is in the FIFO, do nothing.
      * 
      *      * Execute():
@@ -45,7 +47,7 @@ void run_sim(ArgumentWrapper args)
      *      ! If nothing is in the ready_list[] and issue_list[], do nothing.
      * 
      *      * Dispatch():
-     *      ? 1. If the SchedulingQueue is not full, then:
+     *      ? 1. If the SchedulingQueue (issue_list[]) is not full, then:
      *      ?    A. Remove the instruction from the dispatch_list[] and add it to the issue_list[]
      *      ?    B. Transition from the ID state to the IS state. Set the state of the instruction to ID
      *      ?    C. Rename source operands by looking up the state in the RegisterFile
@@ -55,7 +57,8 @@ void run_sim(ArgumentWrapper args)
      *      ? 2. Read new instructions from the trace until the fetch bandwidth is full or DispatchQueue is full.
      *      ?    A. Push new instruction to FIFO.
      *      ?    B. Set its state to IF.
-     *      ?    C. Add instruction to the dispatch_list[] and reserve a DispatchQueue entry.
+     *      ?    C. Add instruction to the dispatch_list[] and reserve a DispatchQueue entry. 
+     *      ?       For instructions in the dispatch_list[] set the state of instructions to ID.
      * * End of a Cycle
      * * AdvanceCycle():
      * ? 1. If the FIFO is empty AND the trace is depleted, return False to the terminate the loop.
@@ -77,6 +80,5 @@ int main(int argc, char **argv)
     ArgumentWrapper arguments(argc, argv);
 
     run_sim(arguments);
-
     return 0;
 }
