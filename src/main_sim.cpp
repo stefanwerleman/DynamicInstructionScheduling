@@ -3,6 +3,7 @@
 #include <string>
 
 #include "../libs/ArgumentWrapper/ArgumentWrapper.h"
+#include "../libs/DispatchQueue/DispatchQueue.h"
 #include "../libs/Instruction/Instruction.h"
 #include "../libs/FakeROB/FakeROB.h"
 
@@ -15,6 +16,8 @@ void run_sim(ArgumentWrapper args)
         std::cout << "FAILED TO OPEN FILE: " << args.trace_file << std::endl;
         return;
     }
+
+    FakeROB *fr = new FakeROB();
 
     /**
      * ! This entire loop is FakeROB
@@ -65,6 +68,7 @@ void run_sim(ArgumentWrapper args)
      * ? 2. Otherwise, advance the simulator cycle.
     */
 
+    delete fr;
     file.close();
 }
 

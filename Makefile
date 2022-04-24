@@ -11,10 +11,10 @@ SRC = ./src/
 TEST = ./tests/
 
 # List all your .cpp files here (source files, excluding header files)
-SIM_SRC = ./src/main_sim.cpp ./libs/ArgumentWrapper/ArgumentWrapper.cpp ./libs/Instruction/Instruction.cpp ./libs/FakeROB/FakeROB.cpp
+SIM_SRC = ./src/main_sim.cpp ./libs/ArgumentWrapper/ArgumentWrapper.cpp ./libs/Instruction/Instruction.cpp ./libs/FakeROB/FakeROB.cpp ./libs/DispatchQueue/DispatchQueue.cpp ./libs/SchedulingQueue/SchedulingQueue.cpp ./libs/FunctionUnits/FunctionUnits.cpp
 
 # List corresponding compiled object files here (.o files)
-SIM_OBJ = ./src/main_sim.o ./libs/ArgumentWrapper/ArgumentWrapper.o ./libs/Instruction/Instruction.o ./libs/FakeROB/FakeROB.o
+SIM_OBJ = ./src/main_sim.o ./libs/ArgumentWrapper/ArgumentWrapper.o ./libs/Instruction/Instruction.o ./libs/FakeROB/FakeROB.o ./libs/DispatchQueue/DispatchQueue.o ./libs/SchedulingQueue/SchedulingQueue.o ./libs/FunctionUnits/FunctionUnits.o
  
 #################################
 
