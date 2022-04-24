@@ -4,19 +4,21 @@
 #include <fstream>
 #include <queue>
 
-#include "../DispatchQueue/DispatchQueue.h"
-#include "../FunctionUnits/FunctionUnits.h"
+#include "../ArgumentWrapper/ArgumentWrapper.h"
 #include "../Instruction/Instruction.h"
-#include "../SchedulingQueue/SchedulingQueue.h"
 
 class FakeROB
 {
     public:
-        DispatchQueue *dq;
-        SchedulingQueue *sq;
-        FunctionUnits *fu;
-
         std::queue<Instruction*> *fifo;
+        std::queue<Instruction*> *dispatch_list;
+        std::queue<Instruction*> *issue_list;
+        std::queue<Instruction*> *execute_list;
+
+        // Limits
+        unsigned int N;
+        unsigned int N2;
+        unsigned int S;
 
         // Results
         unsigned int num_instr;
@@ -24,10 +26,10 @@ class FakeROB
         double IPC;
 
 
-        FakeROB (void);
+        FakeROB (ArgumentWrapper args);
         ~FakeROB (void);
         
-        bool insert(Instruction *instr);
+        void dispatch(void);
         void fetch(std::fstream *file);
         bool advance_cycle(std::fstream *file);
 };

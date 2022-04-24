@@ -5,65 +5,63 @@
 
 #include "FakeROB.h"
 
-#include "../DispatchQueue/DispatchQueue.h"
+#include "../ArgumentWrapper/ArgumentWrapper.h"
 #include "../Instruction/Instruction.h"
-#include "../SchedulingQueue/SchedulingQueue.h"
 
-FakeROB::FakeROB (void)
+FakeROB::FakeROB (ArgumentWrapper args)
 {
-    this->fifo = new std::queue<Instruction*>;
+    this->N = args.N;
+    this->N2 = 2 * args.N;
+    this->S = args.S;
 
-    this->dq = new DispatchQueue();
-    this->sq = new SchedulingQueue();
+    this->fifo = new std::queue<Instruction*>;
+    this->dispatch_list = new std::queue<Instruction*>;
+    this->issue_list = new std::queue<Instruction*>;
+    this->execute_list = new std::queue<Instruction*>;
 }
 
 FakeROB::~FakeROB (void)
 {
     if (this->fifo != NULL)
     {
-        Instruction *temp;
-        for (int i = 0; !this->fifo->empty() ; i++)
+        while (!this->fifo->empty())
         {
-            temp = this->fifo->front();
+            delete this->fifo->front();
             this->fifo->pop();
-            
-            if (temp != NULL)
-            {
-                delete temp;
-            }
         }
 
         delete this->fifo;
     }
 
-    if (this->dq != NULL)
+
+    // * NOTE: No need to free the instructions inside the other lists 
+    // * because their references have been handled in the fifo parent queue.
+    if (this->dispatch_list != NULL)
     {
-        delete this->dq;
+        delete this->dispatch_list;
     }
 
-    if (this->sq != NULL)
+    if (this->issue_list != NULL)
     {
-        delete this->sq;
+        delete this->issue_list;
+    }
+
+    if (this->execute_list != NULL)
+    {
+        delete this->execute_list;
     }
 }
 
-// Returns a bool indicating if there was room to insert the next instr.
-bool FakeROB::insert(Instruction *instr)
+void FakeROB::dispatch(void)
 {
-    if (this->fifo->size() < 1024)
-    {
-        this->fifo->push(instr);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    
 }
 
 void FakeROB::fetch(std::fstream *file)
 {
+    unsigned int fetch_count = 0;
     std::string in;
+
     while ((*file) >> in)
     {
         Instruction *instr = new Instruction();
@@ -83,12 +81,20 @@ void FakeROB::fetch(std::fstream *file)
         instr->src_reg2 = stoi(in);
 
         instr->tag = this->num_instr;
-
-        // TODO: If inserted to dispatch_list DispatchQueue, set state to ID unconditionally.
+        if (this->dispatch_list->size() < this->N2)
+        {
+            instr->state = "ID";
+            this->dispatch_list->push(instr);
+        }
         
         this->num_instr++;
-
-        if (!this->insert(instr))
+        if (this->fifo->size() < 1024)
+        {
+            this->fifo->push(instr);
+        }
+        
+        fetch_count++;
+        if (fetch_count >= this->N)
         {
             return;
         }

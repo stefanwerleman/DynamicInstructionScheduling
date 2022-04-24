@@ -3,7 +3,6 @@
 #include <string>
 
 #include "../libs/ArgumentWrapper/ArgumentWrapper.h"
-#include "../libs/DispatchQueue/DispatchQueue.h"
 #include "../libs/Instruction/Instruction.h"
 #include "../libs/FakeROB/FakeROB.h"
 
@@ -17,7 +16,7 @@ void run_sim(ArgumentWrapper args)
         return;
     }
 
-    FakeROB *fr = new FakeROB();
+    FakeROB *fr = new FakeROB(args);
 
     /**
      * ! This entire loop is FakeROB
