@@ -1,6 +1,6 @@
+#include <deque>
 #include <fstream>
 #include <iostream>
-#include <queue>
 #include <string>
 
 #include "FakeROB.h"
@@ -14,10 +14,11 @@ FakeROB::FakeROB (ArgumentWrapper args)
     this->N2 = 2 * args.N;
     this->S = args.S;
 
-    this->fifo = new std::queue<Instruction*>;
-    this->dispatch_list = new std::queue<Instruction*>;
-    this->issue_list = new std::queue<Instruction*>;
-    this->execute_list = new std::queue<Instruction*>;
+    this->fifo = new std::deque<Instruction*>;
+    this->dispatch_list = new std::deque<Instruction*>;
+    this->issue_list = new std::deque<Instruction*>;
+    this->execute_list = new std::deque<Instruction*>;
+    this->temp_list = new std::deque<Instruction*>;
 }
 
 FakeROB::~FakeROB (void)
@@ -27,7 +28,7 @@ FakeROB::~FakeROB (void)
         while (!this->fifo->empty())
         {
             delete this->fifo->front();
-            this->fifo->pop();
+            this->fifo->pop_front();
         }
 
         delete this->fifo;
@@ -50,6 +51,11 @@ FakeROB::~FakeROB (void)
     {
         delete this->execute_list;
     }
+
+    if (this->temp_list != NULL)
+    {
+        delete this->temp_list;
+    }
 }
 
 void FakeROB::fake_retire(void)
@@ -57,13 +63,13 @@ void FakeROB::fake_retire(void)
     Instruction *instr = NULL;
     while (!this->fifo->empty() && this->fifo->front()->state == "WB")
     {
-        std::cout << *(this->fifo->front());
+        // std::cout << *(this->fifo->front());
         if (this->fifo->front() != NULL)
         {
             delete this->fifo->front();;
         }
 
-        this->fifo->pop();
+        this->fifo->pop_front();
     }
 }
 
@@ -72,7 +78,7 @@ void FakeROB::execute(void)
     while (!this->execute_list->empty())
     {
         this->execute_list->front()->state = "WB";
-        this->execute_list->pop();
+        this->execute_list->pop_front();
     }
 }
 
@@ -81,8 +87,8 @@ void FakeROB::issue(void)
     while (!this->issue_list->empty())
     {
         this->issue_list->front()->state = "EX";
-        this->execute_list->push(this->issue_list->front());
-        this->issue_list->pop();
+        this->execute_list->push_back(this->issue_list->front());
+        this->issue_list->pop_front();
     }
 }
 
@@ -91,8 +97,8 @@ void FakeROB::dispatch(void)
     while (this->issue_list->size() < this->S && !this->dispatch_list->empty())
     {
         this->dispatch_list->front()->state = "IS";
-        this->issue_list->push(this->dispatch_list->front());
-        this->dispatch_list->pop();
+        this->issue_list->push_back(this->dispatch_list->front());
+        this->dispatch_list->pop_front();
     }
 }
 
@@ -127,8 +133,8 @@ void FakeROB::fetch(std::fstream *file)
         instr->src_reg2 = stoi(in);
 
         instr->tag = this->num_instr;
-        this->fifo->push(instr);
-        this->dispatch_list->push(instr);
+        this->fifo->push_back(instr);
+        this->dispatch_list->push_back(instr);
 
         this->num_instr++;
     }

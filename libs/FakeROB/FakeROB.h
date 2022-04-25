@@ -1,8 +1,8 @@
 #ifndef FAKE_ROB
 #define FAKE_ROB
 
+#include <deque>
 #include <fstream>
-#include <queue>
 
 #include "../ArgumentWrapper/ArgumentWrapper.h"
 #include "../Instruction/Instruction.h"
@@ -10,10 +10,11 @@
 class FakeROB
 {
     public:
-        std::queue<Instruction*> *fifo;
-        std::queue<Instruction*> *dispatch_list;
-        std::queue<Instruction*> *issue_list;
-        std::queue<Instruction*> *execute_list;
+        std::deque<Instruction*> *fifo;
+        std::deque<Instruction*> *dispatch_list;
+        std::deque<Instruction*> *issue_list;
+        std::deque<Instruction*> *execute_list;
+        std::deque<Instruction*> *temp_list;
 
         // Limits
         unsigned int N;

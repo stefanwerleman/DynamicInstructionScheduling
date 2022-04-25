@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <string>
 
 #include "../libs/ArgumentWrapper/ArgumentWrapper.h"
@@ -18,7 +19,6 @@ void run_sim(ArgumentWrapper args)
 
     FakeROB *fr = new FakeROB(args);
 
-    int i = 0;
     do
     {
         fr->fake_retire();
@@ -27,10 +27,10 @@ void run_sim(ArgumentWrapper args)
         fr->dispatch();
         fr->fetch(&file);
         fr->num_cycles++;
-
-        i++;
     }
     while (fr->advance_cycle(&file));
+
+    fr->IPC = (double)fr->num_instr / fr->num_cycles;
 
     /**
      * ! This entire loop is FakeROB
@@ -80,6 +80,12 @@ void run_sim(ArgumentWrapper args)
      * ? 1. If the FIFO is empty AND the trace is depleted, return False to the terminate the loop.
      * ? 2. Otherwise, advance the simulator cycle.
     */
+
+    std::cout << "number of instructions = " << fr->num_instr << std::endl;
+    std::cout << "number of cycles =       " << fr->num_cycles << std::endl;
+
+    std::cout << std::fixed;
+    std::cout << "IPC =                    " <<  std::setprecision(5) <<  fr->IPC << std::endl;
 
     delete fr;
     file.close();
