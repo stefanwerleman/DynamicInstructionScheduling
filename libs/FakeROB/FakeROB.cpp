@@ -94,12 +94,22 @@ void FakeROB::issue(void)
 
 void FakeROB::dispatch(void)
 {
-    while (this->issue_list->size() < this->S && !this->dispatch_list->empty())
+    while (!this->dispatch_list->empty() && this->dispatch_list->front()->state == "ID")
     {
-        this->dispatch_list->front()->state = "IS";
-        this->issue_list->push_back(this->dispatch_list->front());
+        std::cout << this->num_cycles << std::endl;
+        this->temp_list->push_back(this->dispatch_list->front());
         this->dispatch_list->pop_front();
     }
+
+    while (!this->temp_list->empty() && this->issue_list->size() < this->S)
+    {
+        this->temp_list->front()->state = "IS";
+        this->issue_list->push_back(this->temp_list->front());
+        this->temp_list->pop_front();
+    }
+
+    for (int i = 0; i < this->dispatch_list->size(); i++)
+        this->dispatch_list->at(i)->state = "ID";
 }
 
 void FakeROB::fetch(std::fstream *file)
