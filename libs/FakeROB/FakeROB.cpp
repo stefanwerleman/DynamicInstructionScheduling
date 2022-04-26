@@ -8,6 +8,8 @@
 #include "../ArgumentWrapper/ArgumentWrapper.h"
 #include "../Instruction/Instruction.h"
 
+const unsigned int REGISTER_SIZE = 128;
+
 FakeROB::FakeROB (ArgumentWrapper args)
 {
     this->N = args.N;
@@ -19,6 +21,11 @@ FakeROB::FakeROB (ArgumentWrapper args)
     this->issue_list = new std::deque<Instruction*>;
     this->execute_list = new std::deque<Instruction*>;
     this->temp_list = new std::deque<Instruction*>;
+
+    this->register_file = new Register[REGISTER_SIZE];
+
+    for (int i = 0; i < REGISTER_SIZE; i++)
+        this->register_file[i].tag = i;
 }
 
 FakeROB::~FakeROB (void)
@@ -38,24 +45,19 @@ FakeROB::~FakeROB (void)
     // * NOTE: No need to free the instructions inside the other lists 
     // * because their references have been handled in the fifo parent queue.
     if (this->dispatch_list != NULL)
-    {
         delete this->dispatch_list;
-    }
 
     if (this->issue_list != NULL)
-    {
         delete this->issue_list;
-    }
 
     if (this->execute_list != NULL)
-    {
         delete this->execute_list;
-    }
 
     if (this->temp_list != NULL)
-    {
         delete this->temp_list;
-    }
+
+    if (this->register_file != NULL)
+        delete [] this->register_file;
 }
 
 void FakeROB::fake_retire(void)
@@ -96,7 +98,6 @@ void FakeROB::dispatch(void)
 {
     while (!this->dispatch_list->empty() && this->dispatch_list->front()->state == "ID")
     {
-        std::cout << this->num_cycles << std::endl;
         this->temp_list->push_back(this->dispatch_list->front());
         this->dispatch_list->pop_front();
     }

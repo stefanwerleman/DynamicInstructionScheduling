@@ -6,6 +6,7 @@
 #include "../libs/ArgumentWrapper/ArgumentWrapper.h"
 #include "../libs/Instruction/Instruction.h"
 #include "../libs/FakeROB/FakeROB.h"
+#include "../libs/Register/Register.h"
 
 void run_sim(ArgumentWrapper args)
 {

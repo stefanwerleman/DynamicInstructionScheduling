@@ -6,6 +6,7 @@
 
 #include "../ArgumentWrapper/ArgumentWrapper.h"
 #include "../Instruction/Instruction.h"
+#include "../Register/Register.h"
 
 class FakeROB
 {
@@ -15,6 +16,9 @@ class FakeROB
         std::deque<Instruction*> *issue_list;
         std::deque<Instruction*> *execute_list;
         std::deque<Instruction*> *temp_list;
+
+        Register *register_file;
+
 
         // Limits
         unsigned int N;
