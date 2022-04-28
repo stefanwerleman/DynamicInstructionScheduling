@@ -7,9 +7,18 @@ Instruction::Instruction (void)
     this->PC = "0x0";
     this->tag = 0;
     this->op_type = 0;
+
     this->src_reg1 = -1;
+    this->src_reg1_ready = true;
+    this->src_reg1_val = -1;
+    
     this->src_reg2 = -1;
+    this->src_reg2_ready = true;
+    this->src_reg2_val;
+    
     this->dest_reg = -1;
+    this->dest_reg_ready = true;
+    this->dest_reg_val = -1;
 
     this->IF[0] = 0;
     this->IF[1] = 0;

@@ -6,6 +6,7 @@
 #include "../libs/ArgumentWrapper/ArgumentWrapper.h"
 #include "../libs/Instruction/Instruction.h"
 #include "../libs/FakeROB/FakeROB.h"
+#include "../libs/Register/Register.h"
 
 void run_sim(ArgumentWrapper args)
 {
@@ -22,10 +23,15 @@ void run_sim(ArgumentWrapper args)
     do
     {
         fr->fake_retire();
+
         fr->execute();
+
         fr->issue();
+
         fr->dispatch();
+
         fr->fetch(&file);
+
         fr->num_cycles++;
     }
     while (fr->advance_cycle(&file));
@@ -58,7 +64,7 @@ void run_sim(ArgumentWrapper args)
      *      ?    C. Transition from the IS state to the EX state. Set the state of the instruction to EX
      *      ?    D. Free up the scheduling queue entry 
      *      ?       (decrement a count of the number of instructions in the scheduling queue)
-     *      ?    E. Set a timer in the isntruction's data structure that 
+     *      ?    E. Set a timer in the instruction's data structure that 
      *      ?       will allow you to model the execution latency.
      *      ! If nothing is in the ready_list[] and issue_list[], do nothing.
      * 
@@ -101,7 +107,7 @@ int main(int argc, char **argv)
 
     // This is static because it is only used once throughout the entire program.
     ArgumentWrapper arguments(argc, argv);
-
     run_sim(arguments);
+
     return 0;
 }

@@ -13,9 +13,18 @@ class Instruction
         // Instruction info
         unsigned int tag;
         unsigned int op_type;
+        
         int src_reg1;
+        int src_reg1_val;
+        bool src_reg1_ready;
+
         int src_reg2;
+        int src_reg2_val;
+        bool src_reg2_ready;
+
         int dest_reg;
+        int dest_reg_val;
+        bool dest_reg_ready;
 
         // Stages
         unsigned int IF[2];
