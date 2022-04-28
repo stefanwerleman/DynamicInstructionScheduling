@@ -23,10 +23,15 @@ void run_sim(ArgumentWrapper args)
     do
     {
         fr->fake_retire();
+
         fr->execute();
+
         fr->issue();
+
         fr->dispatch();
+
         fr->fetch(&file);
+
         fr->num_cycles++;
     }
     while (fr->advance_cycle(&file));

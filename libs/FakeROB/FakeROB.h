@@ -11,14 +11,17 @@
 class FakeROB
 {
     public:
+        // ROB
         std::deque<Instruction*> *fifo;
+        
         std::deque<Instruction*> *dispatch_list;
         std::deque<Instruction*> *issue_list;
         std::deque<Instruction*> *execute_list;
+
         std::deque<Instruction*> *temp_list;
+        std::deque<Instruction*> *ready_list;
 
         Register *register_file;
-
 
         // Limits
         unsigned int N;
@@ -37,7 +40,10 @@ class FakeROB
         void fake_retire(void);
         void execute(void);
         void issue(void);
+
+        void rename(Instruction *instr);
         void dispatch(void);
+        
         void fetch(std::fstream *file);
         bool advance_cycle(std::fstream *file);
 };
