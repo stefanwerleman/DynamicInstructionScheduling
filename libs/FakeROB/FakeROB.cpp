@@ -69,7 +69,10 @@ void FakeROB::fake_retire(void)
     Instruction *instr = NULL;
     while (!this->fifo->empty() && this->fifo->front()->state == "WB")
     {
+        this->fifo->front()->WB[0] = this->fifo->front()->EX[0] + this->fifo->front()->EX[1];
+        this->fifo->front()->WB[1] = 1;
         std::cout << *(this->fifo->front());
+        
         if (this->fifo->front() != NULL)
         {
             delete this->fifo->front();;
@@ -81,26 +84,58 @@ void FakeROB::fake_retire(void)
 
 void FakeROB::execute(void)
 {
-    while (!this->execute_list->empty())
+    for (int i = 0; i < this->execute_list->size(); i++)
     {
-        this->execute_list->front()->state = "WB";
-        this->execute_list->pop_front();
+        this->execute_list->front()->EX[0] = this->execute_list->front()->IS[0] + this->execute_list->front()->IS[1];
+        if ((this->execute_list->front()->op_type == 0 && this->execute_list->front()->EX[1] == 1) || (this->execute_list->front()->op_type == 1 && this->execute_list->front()->EX[1] == 2) || (this->execute_list->front()->op_type == 2 && this->execute_list->front()->EX[1] == 5))
+        {
+            this->execute_list->front()->state = "WB";
+
+            if (this->execute_list->front()->dest_reg != -1)
+            {
+                this->register_file[this->execute_list->front()->dest_reg].tag = -1;
+            }
+
+            this->execute_list->pop_front();
+        }
+        else
+        {
+            this->execute_list->front()->EX[1]++;
+        }
+    }
+
+    for (int i = 0; i < this->issue_list->size(); i++)
+    {
+        if (!this->issue_list->at(i)->src_reg1_ready && this->register_file[this->issue_list->at(i)->src_reg1].tag == -1)
+        {
+            this->issue_list->at(i)->src_reg1_ready = true;
+        }
+
+        if (!this->issue_list->at(i)->src_reg2_ready && this->register_file[this->issue_list->at(i)->src_reg2].tag == -1)
+        {
+            this->issue_list->at(i)->src_reg2_ready = true;
+        }
     }
 }
 
 void FakeROB::issue(void)
 {
     Instruction *instr;
-    int size = this->issue_list->size();
 
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < this->issue_list->size(); i++)
     {
-        instr = this->issue_list->front();
+        this->issue_list->at(i)->IS[1]++;
+    }
+
+    for (int i = 0; i < this->issue_list->size(); i++)
+    {
+        instr = this->issue_list->front(); 
+        instr->IS[0] = instr->ID[0] + instr->ID[1];
         this->issue_list->pop_front();
-        
-        if (instr->src_reg1_ready && instr->src_reg2_ready)
+        if (instr->state == "IS" && instr->src_reg1_ready && instr->src_reg2_ready)
         {
-            this->ready_list->push_back(instr);
+            instr->state = "EX";
+            this->execute_list->push_back(instr);
         }
         else
         {
@@ -108,17 +143,6 @@ void FakeROB::issue(void)
         }
     }
 
-    // TODO: Add all ready instructions to temp_list[].
-    // * NOTE: temp_list[] will act as a ready_list[]. 
-    // *       Or it might be better to create a separate one     
-    while (!this->ready_list->empty())
-    {
-        std::cout << "===================INSERT===================" << std::endl;
-        this->ready_list->front()->state = "EX";
-        this->execute_list->push_back(this->ready_list->front());
-
-        this->ready_list->pop_front();
-    }
 }
 
 void FakeROB::rename(Instruction *instr)
@@ -128,19 +152,32 @@ void FakeROB::rename(Instruction *instr)
         instr->src_reg1_ready = this->register_file[instr->src_reg1].ready;
         instr->src_reg1_val = this->register_file[instr->src_reg1].tag;
     }
+    else
+    {
+        instr->src_reg1_val = -1;
+        instr->src_reg1_ready = true;
+    }
 
     if (instr->src_reg2 != -1 && this->register_file[instr->src_reg2].ready)
     {
         instr->src_reg2_ready = this->register_file[instr->src_reg2].ready;
         instr->src_reg2_val = this->register_file[instr->src_reg2].tag;
     }
+    else
+    {
+        instr->src_reg2_val = -1;
+        instr->src_reg2_ready = true;
+    }
 
-    // TODO: Go back to this one if it acts up.
     if (instr->dest_reg != -1)
     {
-        // * register_file == RAT
         this->register_file[instr->dest_reg].ready = false;
         this->register_file[instr->dest_reg].tag = instr->tag;
+    }
+    else
+    {
+        instr->dest_reg_ready = true;
+        instr->dest_reg_val = -1;
     }
 }
 
@@ -148,21 +185,33 @@ void FakeROB::dispatch(void)
 {
     while (!this->dispatch_list->empty() && this->dispatch_list->front()->state == "ID")
     {
+        this->dispatch_list->front()->ID[0] = this->dispatch_list->front()->IF[0] + this->dispatch_list->front()->IF[1];
         this->temp_list->push_back(this->dispatch_list->front());
         this->dispatch_list->pop_front();
     }
 
-    while (!this->temp_list->empty() && this->issue_list->size() < this->S)
+    for (int i = 0; i < this->temp_list->size(); i++)
     {
-        this->temp_list->front()->state = "IS";
-        this->rename(this->temp_list->front());
-
-        this->issue_list->push_back(this->temp_list->front());
-        this->temp_list->pop_front();
+        this->temp_list->at(i)->ID[1]++;
+    }
+    
+    for (int i = 0; i < this->temp_list->size(); i++)
+    {
+        if (this->issue_list->size() < this->S)
+        {
+            this->temp_list->front()->state = "IS";
+            this->rename(this->temp_list->front());
+            this->issue_list->push_back(this->temp_list->front());
+            this->temp_list->pop_front();
+        }
     }
 
+    // Unconditionally set instructions in IF to ID state.
     for (int i = 0; i < this->dispatch_list->size(); i++)
+    {
         this->dispatch_list->at(i)->state = "ID";
+        this->dispatch_list->at(i)->IF[1] = 1;
+    }
 }
 
 void FakeROB::fetch(std::fstream *file)
@@ -172,7 +221,7 @@ void FakeROB::fetch(std::fstream *file)
     Instruction *instr = NULL;
 
     while (fetch_count < this->N && this->dispatch_list->size() < this->N2)
-    {   
+    {
         (*file) >> in;
         
         if (file->eof())
@@ -196,13 +245,16 @@ void FakeROB::fetch(std::fstream *file)
         instr->src_reg2 = stoi(in);
 
         instr->tag = this->num_instr;
+        instr->IF[0] = this->num_cycles;
         
         // ROB
         this->fifo->push_back(instr);
         this->dispatch_list->push_back(instr);
 
+        fetch_count++;
         this->num_instr++;
     }
+    // std::cout << "num_fetched: " << this->num_instr << std::endl;
 }
 
 bool FakeROB::advance_cycle(std::fstream *file)

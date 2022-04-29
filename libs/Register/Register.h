@@ -4,7 +4,7 @@
 class Register
 {
     public:
-        unsigned int tag;
+        int tag;
         bool ready = true;
 };
 

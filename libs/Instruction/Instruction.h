@@ -17,10 +17,12 @@ class Instruction
         int src_reg1;
         int src_reg1_val;
         bool src_reg1_ready;
+        bool src_reg1_complete;
 
         int src_reg2;
         int src_reg2_val;
         bool src_reg2_ready;
+        bool src_reg2_complete;
 
         int dest_reg;
         int dest_reg_val;
